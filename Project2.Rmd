@@ -87,6 +87,11 @@ get_dish_pairings <- function(wine){
   
   # Checking if the wine is a valid input
   if(is.character(wine)){
+    # Replacing any underscores with spaces so the API works
+      if(grepl("_",wine, fixed)){
+        wine <- gsub("_", " ", wine)
+      }
+
       API_string <- paste0("https://api.spoonacular.com/food/wine/dishes?apiKey=",
                        api_key,"&wine=",wine)
   } else if(is.null(wine)){
@@ -115,5 +120,70 @@ get_dish_pairings <- function(wine){
 }
 ```
 
-
 ## Exploratory Data Analysis
+
+For this exploratory data analysis, we started by investigating whether price really 
+affected the quality of the wine, using the Wine Recommendation API function.
+
+
+
+The next investigation was into dish recommendations - we were curious about the differences
+in dishes recommended across sub-varieties of wine. We wanted to know if there were certain
+dishes a merlot, for example, paired better with than a pinot noir. In order to accomplish this,
+we used the [Wine Guide](https://spoonacular.com/food-api/docs#Wine-Guide) to create a list of all 
+the red wines (since we tend to drink more red than white) and made function calls for
+all of those wines. Not all wines had recommendations, so we simplified the list to include
+only those that did. We merged that data together so that it could be explored.
+
+```{r red_wine_exploration}
+# List of all the red wines
+red_wines <- c("zweigelt",  "barbera_wine", "primitivo", "pinot_noir", "nebbiolo",
+               "red_burgundy", "rioja",  "grenache", "malbec", "zinfandel", "sangiovese",
+               "cabernet_sauvignon", "tempranillo", "shiraz","merlot", "nero_d'avola",
+               "bordeaux", "port", "gamay", "dornfelder", "sparkling_red_wine", 
+               "pinotage", "agiorgitiko")
+
+red_wines_list <- lapply(red_wines, get_dish_pairings)
+# Associating the dishes with the wines
+names(red_wines_list) <- red_wines
+
+# Now we need to reshape the data to see for each wine
+# Going to have it in long format for easier EDA
+# red_wines_unlist <- sapply(red_wines_list, "length<-", max(lengths(red_wines_list)))
+# red_wines_df <- as.data.frame(sapply(red_wines_unlist, "length<-", max(lengths(red_wines_unlist))))
+# colnames(red_wines_df) <- red_wines
+red_wines_df <- as.data.frame(unlist(red_wines_list))
+red_wines_df <- red_wines_df %>%
+  rownames_to_column("wine_original") %>%
+    separate(col = wine_original, into = c("wine", "dishes"), sep = "\\.") %>%
+      rename(dish = `unlist(red_wines_list)`) %>%
+        select("wine", "dish")
+
+# Creating a contingency table to see how frequently each dish is recommended
+table(red_wines_df$dish)
+
+# Creating a barplot to see how many dishes were recommended per type of wine
+# First creating a new column for type of wine
+red_wines_df <- red_wines_df %>% 
+  mutate(wine_type = ifelse(wine %in% c("bordeaux", "port", "gamay", "dornfelder", "pinotage",
+                                    "agiorgitiko"), "Regular", 
+                        ifelse(wine == "sparkling_red_wine", "Sparkling", "Dry")))
+
+g <- ggplot(red_wines_df, aes(x = wine))
+g + geom_bar(aes(fill = wine_type)) + labs(x = "Wines", y = "Dishes Count", title = "Dishes Recommended Count by Type of Wine") + theme(axis.text.x = element_text(angle = 45))
+
+# A natural next question is - how many dishes are in common across similar wine types?
+# From the contigency table, we saw that chili and steak were the most recommended at 
+# 4 wines each. Are these wines of the same type?
+red_wines_df %>% subset(dish %in% c("chili", "steak"))
+# Yes!
+# Now let's check that across all repeated dishes
+repeated_dishes <- red_wines_df %>% 
+  count(dish) %>%
+  subset(n > 1)
+red_wines_repeated <- red_wines_df %>% subset(dish %in% repeated_dishes$dish)
+g <- ggplot(red_wines_repeated, aes(x = dish))
+g + geom_bar(aes(fill = wine_type)) + labs(x = "Dishes", y = "Wine Count", title = "Repeated Dishes by Type") + theme(axis.text.x = element_text(angle = 45))
+
+# As we can see by the graph, all except for coq au vin have the same wine type that generated the recommendation
+```
