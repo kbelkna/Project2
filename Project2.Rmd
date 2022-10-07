@@ -31,9 +31,50 @@ We will be pulling from three different APIs: [Wine Recommendation](https://spoo
 The APIs do require an API key to access, which can be received by signing up for a free account. For the free plan, the rate limit is 60 requests in one minute, and a total of 150 requests per day.
 
 ### Wine Recommendation Function
+This function will interact with the [Wine Recommendation API](https://spoonacular.com/food-api/docs#Wine-Recommendation).
+The user will need to input `wine`, which should be a certain type of wine (valid types given here: [Valid Wine Types](https://spoonacular.com/food-api/docs#Wine-Guide). The user may also specify `maxPrice` in USD, `minRating` (a value between 0 and 1), and `number` which is the max number of results to return (up to 100).
+A dataframe will be returned that has contains the wine recommendations which meet the inputted parameters. 
+
+```{r wine_recommendations}
+
+get_wine_recommendations <- function(wine, maxPrice = 50, minRating = 0.7, number = 10){
+  
+  api_key <- "80c8e25c825a4a3c93e5cae79f74b48c"
+  
+  if(is.character(wine) & is.numeric(maxPrice) & is.numeric(minRating) & is.numeric(number)){
+      API_string <- paste0("https://api.spoonacular.com/food/wine/recommendation?apiKey=",
+                       api_key,"&wine=",wine,"&maxPrice=",maxPrice,"&minRating=",minRating,"&number=",number)
+  } else if(is.null(wine)){
+    message <- "ERROR - please enter a type of wine"
+    stop(message)
+  } else if(!is.character(wine)){
+    message <- "ERROR - please enter a string for the type of wine desired"
+    stop(message)
+  } else if(!is.numeric(maxPrice)){
+    message <- "ERROR - please enter a numeric value for maxPrice"
+    stop(message)
+  } else if(!is.numeric(minRating)){
+    message <- "ERROR - please enter a numeric value between 0 & 1 for minRating"
+    stop(message)
+  } else if(!is.numeric(number)){
+    message <- "ERROR - please enter a numeric value between 1 & 100 for number"
+    stop(message)
+  }    
+    
+wine_rec_data <- GET(API_string)  
+  
+output_API <- fromJSON(rawToChar(wine_rec_data$content))
+
+wine_recommendations <- output_API$recommendedWines
+
+return(wine_recommendations)
+
+}
+```
+
 
 ### Wine Pairing Function
-This function will interaction with the [Wine Pairing API](https://spoonacular.com/food-api/docs#Wine-Pairing).
+This function will interact with the [Wine Pairing API](https://spoonacular.com/food-api/docs#Wine-Pairing).
 The user will need to input `food`, which can be a certain dish such as `steak`, or a cuisine such as `Italian`.
 These inputs should be simple - a full recipe name does not need to be given.
 A dataframe will be returned that has the paired wine recommendations. These 
