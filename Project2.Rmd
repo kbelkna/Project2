@@ -18,3 +18,14 @@ To interact with these functions, either a general wine type such as "merlot" ne
 ## Requirements
 WILL FILL OUT LATER
 
+
+## API Interaction Functions
+In this section, we will define functions to interact with the various wine APIs found [here](https://spoonacular.com/food-api/docs#Wine-Guide). We will be pulling from three different APIs: [Wine Recommendation](https://spoonacular.com/food-api/docs#Wine-Recommendation), [Wine Pairing](https://spoonacular.com/food-api/docs#Wine-Pairing), and [Dish Pairing for Wine](https://spoonacular.com/food-api/docs#Dish-Pairing-for-Wine). 
+
+The APIs do not require an authentication key to access, so it is fairly simple to be able to access them. 
+
+### Wine Recommendation Function
+
+### Wine Pairing Function
+
+### Dish Pairing for Wine
