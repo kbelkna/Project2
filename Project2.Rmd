@@ -1,0 +1,20 @@
+---
+title: "Wine Data API Vignette"
+author: "Annie Brinza"
+date: '2022-10-07'
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This document is a vignette about contacting an API using functions we've created to
+query, parse, and return well-structured data. We’ll then use our functions to obtain data from the API
+and do some exploratory data analysis. Kara Belknap and Annie Brinza worked on this project. We decided to use wine data from the food data API. Specifically, we will be focusing on general wine recommendations, dish pairings to go with a certain wine, and wine recommendations given a certain dish. We will be building functions to accomplish all of that.
+
+To interact with these functions, either a general wine type such as "merlot" needs to be given, or a dish or cuisine type such as "Italian." This will be detailed further for each of the API calls.
+
+## Requirements
+WILL FILL OUT LATER
+
