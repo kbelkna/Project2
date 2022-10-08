@@ -171,6 +171,53 @@ get_dish_pairings <- function(wine){
 For this exploratory data analysis, we started by investigating whether price really 
 affected the quality of the wine, using the Wine Recommendation API function.
 
+```{r WR_EDA_1}
+
+red_wines_subset <- c("pinot_noir", "malbec", "zinfandel", "cabernet_sauvignon", "shiraz","merlot")
+red_wines_printable <- c("Pinot Noir", "Malbec", "Zinfandel", "Cabernet Sauvignon", "Shiraz","Merlot")
+
+red_wines_rec <- lapply(red_wines_subset, get_wine_recommendations, maxPrice = 100, minRating=0, number=100)
+wine_results <- as.data.frame(bind_rows(red_wines_rec, .id = "id"))
+
+
+wine_results$id <- as.numeric(wine_results$id)
+wine_results$price2 <- parse_number(wine_results$price)
+
+
+wine_results_final <- wine_results %>%
+  mutate(wine_type = red_wines_printable[id], 
+         ratingClass = ifelse(averageRating > 0.85, "high rating", 
+          ifelse(averageRating < 0.75, "low rating", "mid rating")), 
+         priceClass = ifelse(price2 > 50, "high cost", 
+                        ifelse(price2 < 20, "low cost", "mid cost"))) %>%
+  filter(ratingCount > 2)
+
+
+summaryTable <- wine_results_final %>%
+  group_by(wine_type) %>%
+  summarise(avgRating = mean(averageRating), avgPrice = mean(price2), ratio = avgRating/avgPrice*100) 
+summaryTable
+
+
+myScatterPlot <- ggplot(wine_results_final, aes(x=averageRating, y = price2, color=wine_type))
+myScatterPlot + geom_point() +
+  labs(x="Average Rating", y="Price (USD)", title = "Average Rating by Price") 
+
+correlation <- cor(wine_results_final$price2, wine_results_final$averageRating)
+correlation
+
+myHistogram <- ggplot(wine_results_final, aes(x = price2,  fill = ratingClass))
+myHistogram + geom_histogram(binwidth = 10) +
+  labs(x = "Wine Cost", y = "Number of Wines", title = "Count of Wines by Price")
+
+myBoxPlot <- ggplot(wine_results_final, aes(x = wine_type, y = price2))
+myBoxPlot + geom_boxplot() + 
+  geom_jitter(aes(color = ratingClass)) + 
+  labs(x = "Type of Wine", y = "Cost", title = "Type of Wine by Cost")
+
+```
+
+
 ### Wine Pairings Exploration
 The next investigation was into wine pairings. In this case, there is a lot that could possibly be looked at
 and so we needed to narrow down our focus. We decided to look at wine recommendations across several
