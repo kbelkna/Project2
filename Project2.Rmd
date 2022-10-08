@@ -1,39 +1,83 @@
 ---
 title: "Wine Data API Vignette"
-author: "Annie Brinza"
+author: "Annie Brinza & Kara Belknap"
 date: '2022-10-07'
 output: github_document
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+```
+
+This document is a vignette about contacting an API using functions
+we've created to query, parse, and return well-structured data. We'll
+then use our functions to obtain data from the API and do some
+exploratory data analysis. Kara Belknap and Annie Brinza worked on this
+project. We decided to use wine data from the food data API.
+Specifically, we will be focusing on general wine recommendations, dish
+pairings to go with a certain wine, and wine recommendations given a
+certain dish. We will be building functions to accomplish all of that.
+
+To interact with these functions, either a general wine type such as
+"merlot" needs to be given, or a dish or cuisine type such as "Italian."
+This will be detailed further for each of the API calls.
+
+## Requirements
+
+We used the following packages in the creation of this vignette. The
+user will need to install and load these packages in order to interact
+with the API.
+
+```{r packages, message=FALSE}
 library(httr)
 library(tidyverse)
 library(jsonlite)
 ```
 
-This document is a vignette about contacting an API using functions we've created to
-query, parse, and return well-structured data. We’ll then use our functions to obtain data from the API
-and do some exploratory data analysis. Kara Belknap and Annie Brinza worked on this project. We decided to use wine data from the food data API. Specifically, we will be focusing on general wine recommendations, dish pairings to go with a certain wine, and wine recommendations given a certain dish. We will be building functions to accomplish all of that.
-
-To interact with these functions, either a general wine type such as "merlot" needs to be given, or a dish or cuisine type such as "Italian." This will be detailed further for each of the API calls.
-
-## Requirements
-WILL FILL OUT LATER
-
-
 ## API Interaction Functions
-In this section, we will define functions to interact with the various wine APIs found [here](https://spoonacular.com/food-api/docs#Wine-Guide).
-We will be pulling from three different APIs: [Wine Recommendation](https://spoonacular.com/food-api/docs#Wine-Recommendation), 
-[Wine Pairing](https://spoonacular.com/food-api/docs#Wine-Pairing), and 
-[Dish Pairing for Wine](https://spoonacular.com/food-api/docs#Dish-Pairing-for-Wine). 
 
-The APIs do require an API key to access, which can be received by signing up for a free account. For the free plan, the rate limit is 60 requests in one minute, and a total of 150 requests per day.
+In this section, we will define functions to interact with the various
+wine APIs found
+[here](https://spoonacular.com/food-api/docs#Wine-Guide). We will be
+pulling from three different APIs: [Wine
+Recommendation](https://spoonacular.com/food-api/docs#Wine-Recommendation),
+[Wine Pairing](https://spoonacular.com/food-api/docs#Wine-Pairing), and
+[Dish Pairing for
+Wine](https://spoonacular.com/food-api/docs#Dish-Pairing-for-Wine).
+
+The APIs do require an API key to access, which can be received by
+signing up for a free account. For the free plan, the rate limit is 60
+requests in one minute, and a total of 150 requests per day.
 
 ### Wine Recommendation Function
-This function will interact with the [Wine Recommendation API](https://spoonacular.com/food-api/docs#Wine-Recommendation).
-The user will need to input `wine`, which should be a certain type of wine (valid types given here: [Valid Wine Types](https://spoonacular.com/food-api/docs#Wine-Guide). The user may also specify `maxPrice` in USD, `minRating` (a value between 0 and 1), and `number` which is the max number of results to return (up to 100).
-A dataframe will be returned that has contains the wine recommendations which meet the inputted parameters. 
+
+This function, `get_wine_recommendations`, will interact with the [Wine
+Recommendation
+API](https://spoonacular.com/food-api/docs#Wine-Recommendation). The
+user will need to input `wine`, which should be a certain type of wine
+(valid types given here: [Valid Wine
+Types](https://spoonacular.com/food-api/docs#Wine-Guide). The user may
+also specify `maxPrice` in USD, `minRating` (a value between 0 and 1,
+which corresponds to the number of stars. 0.80 would indicate 4 out of 5
+stars.), and `number` which is the max number of results to return (up
+to 100).
+
+A dataframe will be returned that has contains the wine recommendations
+which meet the inputted parameters.
+
+*Behind the function: First, we wrote a series of if statements to check
+the validity of the user inputs along with appropriate error messages in
+case of an inappropriate input. If all inputs were valid, we created an
+output `API_string` using the paste0 function. Once we have this string,
+we run the `GET` function from the `httr` package in order to pull the
+data from the API. The raw data is stored as `wine_rec_data`. We then
+use `fromJSON` from the `jsonlite` package to convert the data to a user
+friendly format. Finally, we store the data of interest in a data frame
+called `wine_recommendations`. This is what is returned by this
+function.*
 
 ```{r wine_recommendations}
 
@@ -45,10 +89,10 @@ get_wine_recommendations <- function(wine, maxPrice = 50, minRating = 0.7, numbe
       API_string <- paste0("https://api.spoonacular.com/food/wine/recommendation?apiKey=",
                        api_key,"&wine=",wine,"&maxPrice=",maxPrice,"&minRating=",minRating,"&number=",number)
   } else if(is.null(wine)){
-    message <- "ERROR - please enter a type of wine"
+    message <- "ERROR - please enter a type of wine from this list: https://spoonacular.com/food-api/docs#Wine-Guide"
     stop(message)
   } else if(!is.character(wine)){
-    message <- "ERROR - please enter a string for the type of wine desired"
+    message <- "ERROR - please enter a string for the type of wine desired from this list: https://spoonacular.com/food-api/docs#Wine-Guide"
     stop(message)
   } else if(!is.numeric(maxPrice)){
     message <- "ERROR - please enter a numeric value for maxPrice"
@@ -69,16 +113,19 @@ wine_recommendations <- output_API$recommendedWines
 
 return(wine_recommendations)
 
-}
+} 
 ```
 
-
 ### Wine Pairing Function
-This function will interact with the [Wine Pairing API](https://spoonacular.com/food-api/docs#Wine-Pairing).
-The user will need to input `food`, which can be a certain dish such as `steak`, or a cuisine such as `Italian`.
-These inputs should be simple - a full recipe name does not need to be given.
-A dataframe will be returned that has the paired wine recommendations. These 
-recommendations can then be used in combination with the Wine Recommendation Function to find the exact wine bottle desired.
+
+This function will interact with the [Wine Pairing
+API](https://spoonacular.com/food-api/docs#Wine-Pairing). The user will
+need to input `food`, which can be a certain dish such as `steak`, or a
+cuisine such as `Italian`. These inputs should be simple - a full recipe
+name does not need to be given. A dataframe will be returned that has
+the paired wine recommendations. These recommendations can then be used
+in combination with the Wine Recommendation Function to find the exact
+wine bottle desired.
 
 ```{r wine_pairing}
 get_wine_pairings <- function(food, max_price = NULL){
@@ -122,9 +169,12 @@ get_wine_pairings <- function(food, max_price = NULL){
 ```
 
 ### Dish Pairing for Wine
-This function will interact with the [Dish Pairing API](https://spoonacular.com/food-api/docs#Dish-Pairing-for-Wine).
-The user will need to input a `wine` they would like a dish recommendation for, such as `merlot`.
-The API will return a list of suggested dishes to go with the wine, such as `burger`.
+
+This function will interact with the [Dish Pairing
+API](https://spoonacular.com/food-api/docs#Dish-Pairing-for-Wine). The
+user will need to input a `wine` they would like a dish recommendation
+for, such as `merlot`. The API will return a list of suggested dishes to
+go with the wine, such as `burger`.
 
 ```{r dish_pairing}
 get_dish_pairings <- function(wine){
@@ -168,12 +218,11 @@ get_dish_pairings <- function(wine){
 
 ## Exploratory Data Analysis
 
-For this exploratory data analysis, we started by investigating whether price really 
-affected the quality of the wine, using the Wine Recommendation API function.
+For this exploratory data analysis, we started by investigating whether
+price really affected the quality of the wine, using the Wine
+Recommendation API function.
 
 ### Wine Recommendation Exploration
-
-
 
 ```{r wine_recs_eda}
 
@@ -221,13 +270,14 @@ myBoxPlot + geom_boxplot() +
 
 ```
 
-
 ### Wine Pairings Exploration
-The next investigation was into wine pairings. In this case, there is a lot that could possibly be looked at
-and so we needed to narrow down our focus. We decided to look at wine recommendations across several
-different cuisines to see differences there. We chose cuisines from several different continents
-because we were also curious as to whether any wine recommendations would be similar within
-the same regions.
+
+The next investigation was into wine pairings. In this case, there is a
+lot that could possibly be looked at and so we needed to narrow down our
+focus. We decided to look at wine recommendations across several
+different cuisines to see differences there. We chose cuisines from
+several different continents because we were also curious as to whether
+any wine recommendations would be similar within the same regions.
 
 ```{r wine_pairings_eda}
 cuisine_list <- c("Italian", "Greek", "French", "Spanish", "Indian", "Korean", 
@@ -269,19 +319,25 @@ g <- ggplot(wine_pairings_long, aes(x = region))
 g + geom_bar(aes(fill = wine_color), position = "fill") + labs(x = "Regions", y = "Percent of Total", title = "Wine Colors by Region") + scale_fill_manual(values = c("black","darkred", "coral1", "lemonchiffon2", "ivory"))
 
 ```
-Interestingly, from the plot we can see that there are no red wines recommended for Asian cuisine, while European
-cuisine has the highest proportion of red wines out of all the regions, at almost 50%. North American
-cuisine has the widest variety of wine colors recommended, but white is still the majority.
 
+Interestingly, from the plot we can see that there are no red wines
+recommended for Asian cuisine, while European cuisine has the highest
+proportion of red wines out of all the regions, at almost 50%. North
+American cuisine has the widest variety of wine colors recommended, but
+white is still the majority.
 
 ### Dish Recommendation Exploration
-The next investigation was into dish recommendations - we were curious about the differences
-in dishes recommended across sub-varieties of wine. We wanted to know if there were certain
-dishes a merlot, for example, paired better with than a pinot noir. In order to accomplish this,
-we used the [Wine Guide](https://spoonacular.com/food-api/docs#Wine-Guide) to create a list of all 
-the red wines (since we tend to drink more red than white) and made function calls for
-all of those wines. Not all wines had recommendations, so we simplified the list to include
-only those that did. We merged that data together so that it could be explored.
+
+The next investigation was into dish recommendations - we were curious
+about the differences in dishes recommended across sub-varieties of
+wine. We wanted to know if there were certain dishes a merlot, for
+example, paired better with than a pinot noir. In order to accomplish
+this, we used the [Wine
+Guide](https://spoonacular.com/food-api/docs#Wine-Guide) to create a
+list of all the red wines (since we tend to drink more red than white)
+and made function calls for all of those wines. Not all wines had
+recommendations, so we simplified the list to include only those that
+did. We merged that data together so that it could be explored.
 
 ```{r red_wine_exploration}
 # List of all the red wines
