@@ -171,7 +171,11 @@ get_dish_pairings <- function(wine){
 For this exploratory data analysis, we started by investigating whether price really 
 affected the quality of the wine, using the Wine Recommendation API function.
 
-```{r WR_EDA_1}
+### Wine Recommendation Exploration
+
+
+
+```{r wine_recs_eda}
 
 red_wines_subset <- c("pinot_noir", "malbec", "zinfandel", "cabernet_sauvignon", "shiraz","merlot")
 red_wines_printable <- c("Pinot Noir", "Malbec", "Zinfandel", "Cabernet Sauvignon", "Shiraz","Merlot")
