@@ -238,13 +238,15 @@ get_dish_pairings <- function(wine){
 
 ## Exploratory Data Analysis
 
-ADD INTRO/SUMMARY?
+One of the reasons we chose the Wine APIs to explore is because we enjoy
+drinking wine but don't know much about it. As a result, we came up with
+several questions that we wanted to explore for each of the different
+endpoints. 
 
 ### Wine Recommendation Exploration
 
-For this exploratory data analysis, we started by investigating whether
-price really affected the quality of the wine, using the Wine
-Recommendation API function.
+The first question we had was "does price really affected the quality of the 
+wine". We investigated this using the Wine Recommendation API function.
 
 *Behind the data: Due to the sheer quantity of wine varietals, we chose
 to focus this EDA on only the most popular red wine varietals in the
@@ -379,13 +381,26 @@ wine_pairings_long <- wine_pairings_long %>%
   mutate(region = ifelse(cuisine %in% c("Italian", "Greek", "French", "Spanish"),
                          "European", ifelse(cuisine %in% c("Indian", "Korean",
                           "Thai", "Japanese"), "Asian", "North American")))
+```
 
-# Creating a two-way contigency table to see counts of wine by region
+In order to see if regions had similar wine recommendations, we
+made a contingency table to see the counts of wine by region.
+```{r pairing_contingency}
+# Creating the contingency table
 table(wine_pairings_long$region, wine_pairings_long$wine)
 
-# As we can see in the contigency table, there are some wines that are similar
-# across the regions! Riesling is popular both in Asian and North American cuisine
+```
 
+As we can see in the contigency table, there are some wines that are similar
+across the regions. Riesling is popular both in Asian and North American cuisine.
+Gewurztraminer and chenin blanc are both similar across Asian cuisines. This makes
+us wonder - is white wine in general more popular in Asian cuisines?
+
+In order to investigate this question, we created a new variable called 
+`wine_color` to classify wine as red, white, or sparkling to see a broader
+pattern.
+
+```{r pairings_barplot}
 # Now going to create a wine color variable to see if red or white is more popular in each
 # region
 wine_pairings_long <- wine_pairings_long %>% 
@@ -404,8 +419,9 @@ g + geom_bar(aes(fill = wine_color), position = "fill") + labs(x = "Regions", y 
 
 ```
 
-Interestingly, from the plot we can see that there are no red wines
-recommended for Asian cuisine, while European cuisine has the highest
+We can see from the plot that yes, Asian cuisine mainly ends up with
+recommendations of white wine. In fact, no red wine is recommended for Asian
+cuisine at all. On the other hand, European cuisine has the highest
 proportion of red wines out of all the regions, at almost 50%. North
 American cuisine has the widest variety of wine colors recommended, but
 white is still the majority.
@@ -437,41 +453,88 @@ names(red_wines_list) <- red_wines
 
 # Now we need to reshape the data to see for each wine
 # Going to have it in long format for easier EDA
-# red_wines_unlist <- sapply(red_wines_list, "length<-", max(lengths(red_wines_list)))
-# red_wines_df <- as.data.frame(sapply(red_wines_unlist, "length<-", max(lengths(red_wines_unlist))))
-# colnames(red_wines_df) <- red_wines
 red_wines_df <- as.data.frame(unlist(red_wines_list))
 red_wines_df <- red_wines_df %>%
   rownames_to_column("wine_original") %>%
     separate(col = wine_original, into = c("wine", "dishes"), sep = "\\.") %>%
       rename(dish = `unlist(red_wines_list)`) %>%
         select("wine", "dish")
+```
 
-# Creating a contingency table to see how frequently each dish is recommended
+We decided to create a contingency table to see how frequently each dish is 
+recommended. This will help us answer our original question, are dishes truly
+different across wine varieties?
+```{r dishes_contingency}
+# Creating a contingency table
 table(red_wines_df$dish)
+```
+It looks like only a few of the dishes are frequently recommended, so yes - 
+different wine varieties will result in different recommendations.
 
+This naturally leads us to ask the next question - do different types of wine
+result in different counts of dishes recommended? And does this differ by subtype
+of red wine?
+
+```{r dishes_barplot}
 # Creating a barplot to see how many dishes were recommended per type of wine
 # First creating a new column for type of wine
 red_wines_df <- red_wines_df %>% 
   mutate(wine_type = ifelse(wine %in% c("bordeaux", "port", "gamay", "dornfelder", "pinotage",
                                     "agiorgitiko"), "Regular", 
                         ifelse(wine == "sparkling_red_wine", "Sparkling", "Dry")))
-
+# Creating the barplot
 g <- ggplot(red_wines_df, aes(x = wine))
 g + geom_bar(aes(fill = wine_type)) + labs(x = "Wines", y = "Dishes Count", title = "Dishes Recommended Count by Type of Wine") + theme(axis.text.x = element_text(angle = 45))
+```
+Looking at the barplot, it looks like regular red wines have a higher average
+dish count. However, looks can be deceiving so we should confirm this theory using
+actual numbers.
 
-# A natural next question is - how many dishes are in common across similar wine types?
-# From the contigency table, we saw that chili and steak were the most recommended at 
-# 4 wines each. Are these wines of the same type?
-red_wines_df %>% subset(dish %in% c("chili", "steak"))
-# Yes!
-# Now let's check that across all repeated dishes
+```{r dishes_average}
+# Looking at just average count by wine type
+grouped_wines_df <- red_wines_df %>%
+  count(wine) %>%
+  mutate(wine_type = ifelse(wine %in% c("bordeaux", "port", "gamay", "dornfelder", "pinotage",
+                            "agiorgitiko"), "Regular", ifelse(wine == 
+                            "sparkling_red_wine", "Sparkling", "Dry"))) %>%
+  group_by(wine_type) %>%
+  summarise(mean_dishes = mean(n))
+
+print(grouped_wines_df)
+```
+It is clear that regular wines do have a higher number of dishes recommended. 
+This makes sense given that they are probably more popular than dry wines, and 
+also have a less sharp taste so could go with a wider variety of food.
+
+One last question to investigate is - how many dishes are in common across 
+similar wine types? From the contigency table, we saw that chili and steak were
+the most recommended at 4 wines each. Are these wines of the same type?
+```{r dishes_subtype_contingency}
+# Creating repeated dishes df
 repeated_dishes <- red_wines_df %>% 
   count(dish) %>%
   subset(n > 1)
+
 red_wines_repeated <- red_wines_df %>% subset(dish %in% repeated_dishes$dish)
+
 g <- ggplot(red_wines_repeated, aes(x = dish))
 g + geom_bar(aes(fill = wine_type)) + labs(x = "Dishes", y = "Wine Count", title = "Repeated Dishes by Type") + theme(axis.text.x = element_text(angle = 45))
-
-# As we can see by the graph, all except for coq au vin have the same wine type that generated the recommendation
 ```
+Chili and steak were all recommended for dry wine types.
+As we can see by the graph, all except for coq au vin have the same wine type 
+that generated the recommendation. Interestingly, all the repeat recommended dishes
+come from in the dry category, even though the regular red wines had a lower
+average number of dishes recommended in general.
+
+## Summary
+To summarize everything we did in this vignette, we built functions to reach out
+to three different Wine APIs. We then retrieved data using these functions, and 
+did some exploratory data analysis to identify patterns in the data and answer
+some questions that we had. We created tables, graphs, and created new variables
+during the EDA. One of the most interesting things we found is that there
+is a very low correlation between the price and rating of a wine. We also found 
+that Asian cuisine results in white wine recommendation mainly, while European
+cuisine is on the other end of that spectrum. 
+
+We hope these APIs help anyone who wants a wine recommendation, a dish recommendation,
+or a suggestion for a wine pairing based off of the dish they are making!
