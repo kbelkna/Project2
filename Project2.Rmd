@@ -124,7 +124,7 @@ get_wine_recommendations <- function(wine, maxPrice = 50, minRating = 0.7, numbe
   } 
   
   return(wine_recommendations)
-
+ 
 }
 
 ```
