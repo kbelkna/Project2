@@ -107,7 +107,7 @@ get_wine_recommendations <- function(wine, maxPrice = 50, minRating = 0.7, numbe
     
   wine_rec_data <- GET(API_string)  
   
-  if(length(wine_rec_data$status) > 0){
+  if(wine_rec_data$status == 400){
     message <- paste0(wine_rec_data$message, ". Check for typos or try a simpler query")
     message2 <- paste0("If looking for a certain wine, try one of these: https://spoonacular.com/food-api/docs#Wine-Guide")
     final_message <- paste(message, message2, sep = "\n")
