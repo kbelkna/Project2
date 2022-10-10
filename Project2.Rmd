@@ -316,19 +316,8 @@ summaryTable
 
 ```
 
-The following scatter plot looks at the average rating by the average price for different wine varietals. You may expect a strong
-correlation between rating and cost, but you can see that highly rated wines can be found across all price points.
 
-
-```{r wine_recs_eda_2}
-myScatterPlot <- ggplot(wine_results_final, aes(x=averageRating, y = price2, color=wine_type))
-myScatterPlot + geom_point() +
-  labs(x="Average Rating", y="Price (USD)", title = "Average Rating by Price") +
-  guides(color = guide_legend("Wine Type"))
-  
-```
-
-To further illustrate the above point, we looked at calculating the correlation between
+We looked at calculating the correlation between
 wine prices and wine ratings. In this particular analysis, the correlation is around 0.25, 
 indicating that there is only a weak correlation between cost and perceived consumer quality.
 
@@ -336,6 +325,22 @@ indicating that there is only a weak correlation between cost and perceived cons
 correlation <- cor(wine_results_final$price2, wine_results_final$averageRating)
 correlation
 ```
+
+
+The following scatter plot looks at the average rating by the average price for different wine varietals. You may expect a strong
+correlation between rating and cost, but you can see that highly rated wines can be found across all price points.
+
+
+```{r wine_recs_eda_2}
+myScatterPlot <- ggplot(wine_results_final, aes(x=averageRating, y = price2))
+myScatterPlot + geom_point(aes(color=wine_type)) +
+  geom_smooth(method = lm, color = "Red") + 
+  geom_text(x = 0.95, y = 80, size = 4, label = paste0("Correlation = ", round(correlation, 2))) + 
+  labs(x="Average Rating", y="Price (USD)", title = "Average Rating by Price") +
+  guides(color = guide_legend("Wine Type")) 
+  
+```
+
 The following graph shows the number of wines in our analysis as a function of cost.
 This is also color-coded by the number of wines in the "low rating", "mid rating", and
 "high rating" classifications that we defined above.
