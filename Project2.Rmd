@@ -486,6 +486,7 @@ different across wine varieties?
 # Creating a contingency table
 table(red_wines_df$dish)
 ```
+
 It looks like only a few of the dishes are frequently recommended, so yes - 
 different wine varieties will result in different recommendations.
 
@@ -504,6 +505,7 @@ red_wines_df <- red_wines_df %>%
 g <- ggplot(red_wines_df, aes(x = wine))
 g + geom_bar(aes(fill = wine_type)) + labs(x = "Wines", y = "Dishes Count", title = "Dishes Recommended Count by Type of Wine") + theme(axis.text.x = element_text(angle = 45))
 ```
+
 Looking at the barplot, it looks like regular red wines have a higher average
 dish count. However, looks can be deceiving so we should confirm this theory using
 actual numbers.
@@ -520,6 +522,7 @@ grouped_wines_df <- red_wines_df %>%
 
 print(grouped_wines_df)
 ```
+
 It is clear that regular wines do have a higher number of dishes recommended. 
 This makes sense given that they are probably more popular than dry wines, and 
 also have a less sharp taste so could go with a wider variety of food.
@@ -538,6 +541,7 @@ red_wines_repeated <- red_wines_df %>% subset(dish %in% repeated_dishes$dish)
 g <- ggplot(red_wines_repeated, aes(x = dish))
 g + geom_bar(aes(fill = wine_type)) + labs(x = "Dishes", y = "Wine Count", title = "Repeated Dishes by Type") + theme(axis.text.x = element_text(angle = 45))
 ```
+
 Chili and steak were all recommended for dry wine types.
 As we can see by the graph, all except for coq au vin have the same wine type 
 that generated the recommendation. Interestingly, all the repeat recommended dishes
