@@ -3,10 +3,12 @@ Wine Data API Vignette
 Annie Brinza & Kara Belknap
 2022-10-07
 
--   [Requirements](#requirements)
--   [API Interaction Functions](#api-interaction-functions)
--   [Exploratory Data Analysis](#exploratory-data-analysis)
--   [Summary](#summary)
+-   <a href="#requirements" id="toc-requirements">Requirements</a>
+-   <a href="#api-interaction-functions"
+    id="toc-api-interaction-functions">API Interaction Functions</a>
+-   <a href="#exploratory-data-analysis"
+    id="toc-exploratory-data-analysis">Exploratory Data Analysis</a>
+-   <a href="#summary" id="toc-summary">Summary</a>
 
 This document is a vignette about contacting an API using functions
 we’ve created to query, parse, and return well-structured data. We’ll
@@ -312,12 +314,12 @@ summaryTable
     ## # A tibble: 6 × 4
     ##   wine_type          avgRating avgPrice  ratio
     ##   <chr>                  <dbl>    <dbl>  <dbl>
-    ## 1 Malbec                 0.837     22.8 0.0368
-    ## 2 Zinfandel              0.851     24.6 0.0346
-    ## 3 Merlot                 0.797     24.6 0.0323
-    ## 4 Shiraz                 0.796     26.9 0.0295
-    ## 5 Cabernet Sauvignon     0.869     33.3 0.0261
-    ## 6 Pinot Noir             0.853     37.4 0.0228
+    ## 1 Malbec                 0.841     18.9 0.0444
+    ## 2 Merlot                 0.819     21.2 0.0387
+    ## 3 Zinfandel              0.851     24.6 0.0346
+    ## 4 Pinot Noir             0.831     27.4 0.0303
+    ## 5 Shiraz                 0.792     27.9 0.0283
+    ## 6 Cabernet Sauvignon     0.862     33.3 0.0259
 
 We looked at calculating the correlation between wine prices and wine
 ratings. In this particular analysis, the correlation is around 0.25,
@@ -329,7 +331,7 @@ correlation <- cor(wine_results_final$price2, wine_results_final$averageRating)
 correlation
 ```
 
-    ## [1] 0.2416304
+    ## [1] 0.2213164
 
 The following scatter plot looks at the average rating by the average
 price for different wine varietals. You may expect a strong correlation
@@ -426,20 +428,25 @@ table(wine_pairings_long$region, wine_pairings_long$wine)
 ```
 
     ##                 
-    ##                  agiorgitiko albarino assyrtiko bordeaux champagne chenin blanc chianti gewurztraminer grenache
-    ##   Asian                    0        0         0        0         0            2       0              2        0
-    ##   European                 1        1         1        1         1            0       1              0        1
-    ##   North American           0        1         0        0         0            0       0              1        0
+    ##                  agiorgitiko albarino assyrtiko bordeaux champagne chenin blanc chianti
+    ##   Asian                    0        0         0        0         0            2       0
+    ##   European                 1        1         1        1         1            0       1
+    ##   North American           0        1         0        0         0            0       0
     ##                 
-    ##                  gruener veltliner moschofilero pinot gris pinot noir riesling rose wine sake sauvignon blanc
-    ##   Asian                          1            0          0          0        4         0    1               1
-    ##   European                       0            1          0          0        0         0    0               0
-    ##   North American                 0            0          1          1        3         1    0               1
+    ##                  gewurztraminer grenache gruener veltliner moschofilero pinot gris
+    ##   Asian                       2        0                 1            0          0
+    ##   European                    0        1                 0            1          0
+    ##   North American              1        0                 0            0          1
     ##                 
-    ##                  sparkling rose sparkling wine tempranillo trebbiano verdicchio white burgundy zinfandel
-    ##   Asian                       1              0           0         0          0              0         0
-    ##   European                    0              0           1         1          1              1         0
-    ##   North American              1              1           0         0          0              0         1
+    ##                  pinot noir riesling rose wine sake sauvignon blanc sparkling rose
+    ##   Asian                   0        4         0    1               1              1
+    ##   European                0        0         0    0               0              0
+    ##   North American          1        3         1    0               1              1
+    ##                 
+    ##                  sparkling wine tempranillo trebbiano verdicchio white burgundy zinfandel
+    ##   Asian                       0           0         0          0              0         0
+    ##   European                    0           1         1          1              1         0
+    ##   North American              1           0         0          0              0         1
 
 As we can see in the contigency table, there are some wines that are
 similar across the regions. Riesling is popular both in Asian and North
@@ -523,36 +530,44 @@ table(red_wines_df$dish)
 ```
 
     ## 
-    ##                 african              baked ziti        beef bourguignon               beef ribs 
-    ##                       1                       1                       1                       1 
-    ##         beef stroganoff                 bobotie                 brisket              bunny chow 
-    ##                       2                       1                       3                       1 
-    ##                  burger        chicken parmesan                   chili                 cholent 
-    ##                       3                       1                       4                       1 
-    ##                cioppino                     cod              coq au vin                empanada 
-    ##                       2                       1                       3                       2 
-    ##                    fish                  french       french onion soup                  german 
-    ##                       1                       1                       1                       1 
-    ##                 goulash                   greek                   gyros                    hake 
-    ##                       3                       1                       1                       1 
-    ##               hand pies                 italian                  jjigae             jollof rice 
-    ##                       1                       1                       2                       1 
-    ##                 lasagne     macaroni and cheese                meatloaf                moussaka 
-    ##                       1                       1                       1                       1 
-    ##              onion tart                  paella          pastry pillows       piri piri chicken 
-    ##                       1                       2                       1                       1 
-    ##                   pizza               prime rib                  quiche             ratatouille 
-    ##                       3                       1                       1                       1 
-    ##                rib tips                rouladen               schnitzel                    sole 
-    ##                       1                       1                       1                       1 
-    ##                 souffle         souffle dessert                southern                souvlaki 
-    ##                       1                       1                       1                       1 
-    ##              soy burger spaghetti and meatballs             spanakopita                 spanish 
-    ##                       1                       1                       1                       2 
-    ##                   steak                    stew                    tuna          turkey burgers 
-    ##                       4                       2                       2                       1 
-    ##                turnover 
-    ##                       1
+    ##                 african              baked ziti        beef bourguignon 
+    ##                       1                       1                       1 
+    ##               beef ribs         beef stroganoff                 bobotie 
+    ##                       1                       2                       1 
+    ##                 brisket              bunny chow                  burger 
+    ##                       3                       1                       3 
+    ##        chicken parmesan                   chili                 cholent 
+    ##                       1                       4                       1 
+    ##                cioppino                     cod              coq au vin 
+    ##                       2                       1                       3 
+    ##                empanada                    fish                  french 
+    ##                       2                       1                       1 
+    ##       french onion soup                  german                 goulash 
+    ##                       1                       1                       3 
+    ##                   greek                   gyros                    hake 
+    ##                       1                       1                       1 
+    ##               hand pies                 italian                  jjigae 
+    ##                       1                       1                       2 
+    ##             jollof rice                 lasagne     macaroni and cheese 
+    ##                       1                       1                       1 
+    ##                meatloaf                moussaka              onion tart 
+    ##                       1                       1                       1 
+    ##                  paella          pastry pillows       piri piri chicken 
+    ##                       2                       1                       1 
+    ##                   pizza               prime rib                  quiche 
+    ##                       3                       1                       1 
+    ##             ratatouille                rib tips                rouladen 
+    ##                       1                       1                       1 
+    ##               schnitzel                    sole                 souffle 
+    ##                       1                       1                       1 
+    ##         souffle dessert                southern                souvlaki 
+    ##                       1                       1                       1 
+    ##              soy burger spaghetti and meatballs             spanakopita 
+    ##                       1                       1                       1 
+    ##                 spanish                   steak                    stew 
+    ##                       2                       4                       2 
+    ##                    tuna          turkey burgers                turnover 
+    ##                       2                       1                       1
 
 It looks like only a few of the dishes are frequently recommended, so
 yes - different wine varieties will result in different recommendations.
@@ -573,10 +588,11 @@ g <- ggplot(red_wines_df, aes(x = wine))
 g + geom_bar(aes(fill = wine_type)) + labs(x = "Wines", y = "Dishes Count", title = "Dishes Recommended Count by Type of Wine") + theme(axis.text.x = element_text(angle = 45))
 ```
 
-![](README_files/figure-gfm/dishes_barplot-1.png)<!-- --> Looking at the
-barplot, it looks like regular red wines have a higher average dish
-count. However, looks can be deceiving so we should confirm this theory
-using actual numbers.
+![](README_files/figure-gfm/dishes_barplot-1.png)<!-- -->
+
+Looking at the barplot, it looks like regular red wines have a higher
+average dish count. However, looks can be deceiving so we should confirm
+this theory using actual numbers.
 
 ``` r
 # Looking at just average count by wine type
@@ -621,6 +637,7 @@ g + geom_bar(aes(fill = wine_type)) + labs(x = "Dishes", y = "Wine Count", title
 ```
 
 ![](README_files/figure-gfm/dishes_subtype_contingency-1.png)<!-- -->
+
 Chili and steak were all recommended for dry wine types. As we can see
 by the graph, all except for coq au vin have the same wine type that
 generated the recommendation. Interestingly, all the repeat recommended
